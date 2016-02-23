@@ -5,6 +5,7 @@
 
 import psycopg2
 
+
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
@@ -63,17 +64,36 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
+
     playerStats = []
     conn = connect()
     c = conn.cursor()
-    c.execute("select id, name, wins, matches from players order by\
-                wins desc;")
-    playerStats = c.fetchall()
+    c.execute("select id, name, count(winner) as wins, matches \
+               from players left join matches on id = winner group by \
+               players.id order by wins desc;")
+    playerWins = c.fetchall()
+    """c.execute("select id, name, count(loser) as losses \
+               from players left join matches on id = loser group by \
+               players.id order by wins desc;") # order by id;
+    playerLosses = c.fetchall()"""
     conn.close()
-    return playerStats
-    
+    """ w = zip(*playerWins)[2]
+        l  = zip(*playerLosses)[2]
+        m = zip(w, l)
+        ma = []
+        for i in m:
+        ma.append(sum(i))
+        pw = [list(i) for i in playerWins]
+        pwma =[]
+        pwma = zip(pw, ma)
+        pwmat = [pwma[0][0][0],pwma[0][0][1],pwma[0][0][2],pwma[0][1]]
+        return pwmat"""
+    #print playerWins    
+    return playerWins
 
-    
+#playerStandings()
+
+
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
 
@@ -83,15 +103,15 @@ def reportMatch(winner, loser):
     """
     conn = connect()
     c = conn.cursor()
-    c.execute("insert into matches (playerA, playerB, winner, loser) values \
-               (%s, %s, %s, %s);", (winner, loser, winner, loser))
-    c.execute("update players set wins = wins+1, matches = matches+1\
+    c.execute("insert into matches (winner, loser) values \
+               (%s, %s);", (winner, loser))
+    c.execute("update players set matches = matches+1\
                where players.id = (%s);", (winner,))
-    c.execute("update players set losses = losses+1, matches = matches+1\
+    c.execute("update players set matches = matches+1\
                where players.id = (%s);", (loser,))
     conn.commit()
     conn.close()
- 
+
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
   
@@ -107,16 +127,14 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-
-    pairs = []
-    conn = connect()
-    c = conn.cursor()
-    c.execute("select a.id, a.name, b.id, b.name from players\
-                as a, players as b where a.wins = b.wins and a.id < b.id \
-                order by a.wins desc;")
-    pairs = c.fetchall()
-    conn.close()
+    playerStats = playerStandings()
+    playerStatus = []
+    playerStatus = [row[:2] for row in playerStats]
+    playersA = playerStatus[::2]
+    playersB = playerStatus[1::2]
+    pairs = zip(playersA, playersB)
+    
+    #print pairs
     return pairs
-    
-    
 
+#swissPairings()
