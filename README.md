@@ -13,7 +13,7 @@ players with other players who have the same amount of wins.
 
 The connection to the database is included in tournament.sql.
 
-You need only to connect to the database with the command: \i tournament.sql
+You need only to import the database with the command: \i tournament.sql
 
 With this program and database you can use the following function calls:
 
