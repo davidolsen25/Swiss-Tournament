@@ -1,7 +1,5 @@
-# Fullstack-Project-2
-Project 2 submission for Udacity Fullstack Nanodegree by David Olsen
-
-Swiss Tournament 
+# Swiss Tournament
+by David Olsen
 
 This program and database are meant to be used to run a swiss-style tournament. In a swiss tournament,
 all players play all rounds of play. The standings keep track of the players wins and losses.
